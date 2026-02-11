@@ -251,7 +251,7 @@
 
     <div class="badge">
       <span class="badge-dot"></span>
-      <span>New single out March 6, 2026</span>
+      <span>New single out <span id="releaseDate">—</span></span>
     </div>
 
     <div class="cover-card" id="coverCard" aria-label="Play preview" role="button" tabindex="0">
@@ -285,30 +285,31 @@
         <span>Listen on Spotify (app)</span>
       </button>
 
-      <a class="btn btn-secondary" href="https://open.spotify.com/track/5XV9cxGl6EkmnspSBmDnf8">
-        <img src="icon-spotify.png" class="icon-img" alt="">
-        <span>Listen on Spotify (web)</span>
-      </a>
+      <a class="btn btn-secondary" id="spotifyWebLink" href="#">
+	    <img src="icon-spotify.png" class="icon-img" alt="">
+	    <span>Listen on Spotify (web)</span>
+	  </a>
 
-      <a class="btn btn-secondary" href="https://www.deezer.com/it/album/831049421">
-        <img src="icon-deezer.png" class="icon-img" alt="">
-        <span>Listen on Deezer</span>
-      </a>
+	<a class="btn btn-secondary" id="deezerLink" href="#">
+	  <img src="icon-deezer.png" class="icon-img" alt="">
+	  <span>Listen on Deezer</span>
+	</a>
 
-      <a class="btn btn-secondary" href="https://music.apple.com/us/album/welcome-to-the-system-cup-single/1844003614">
-        <img src="icon-apple.png" class="icon-img" alt="">
-        <span>Listen on Apple Music</span>
-      </a>
+	<a class="btn btn-secondary" id="appleMusicLink" href="#">
+	  <img src="icon-apple.png" class="icon-img" alt="">
+	  <span>Listen on Apple Music</span>
+	</a>
 
-      <a class="btn btn-secondary" href="https://music.amazon.in/albums/B0FTKX8TNQ">
-        <img src="icon-amazon.png" class="icon-img" alt="">
-        <span>Listen on Amazon Music</span>
-      </a>
+	<a class="btn btn-secondary" id="amazonMusicLink" href="#">
+	  <img src="icon-amazon.png" class="icon-img" alt="">
+	  <span>Listen on Amazon Music</span>
+	</a>
 
-      <a class="btn btn-secondary" href="https://youtu.be/h0RzYJAYiaM?si=3HEotJD8gglZR4xH">
-        <img src="icon-youtube.png" class="icon-img" alt="">
-        <span>Listen on YouTube</span>
-      </a>
+	<a class="btn btn-secondary" id="youtubeLink" href="#">
+	  <img src="icon-youtube.png" class="icon-img" alt="">
+	  <span>Listen on YouTube</span>
+	</a>
+
     </div>
 
     <div class="hint">
@@ -366,6 +367,41 @@
 
     syncIcon();
   </script>
+
+	<script>
+	  async function loadData() {
+		const res = await fetch('data.json', { cache: 'no-store' });
+		if (!res.ok) throw new Error(`data.json not found (${res.status})`);
+		return res.json();
+	  }
+
+	  (async () => {
+		try {
+		  const data = await loadData();
+
+		  // badge date
+		  document.getElementById('releaseDate').textContent = data.releaseDate;
+
+		  // link
+		  document.getElementById('spotifyWebLink').href = data.spotifyWeb;
+		  document.getElementById('deezerLink').href = data.deezer;
+		  document.getElementById('appleMusicLink').href = data.appleMusic;
+		  document.getElementById('amazonMusicLink').href = data.amazonMusic;
+		  document.getElementById('youtubeLink').href = data.youtube;
+
+		  // Spotify app button
+		  const spotifyAppBtn = document.getElementById('spotifyAppBtn');
+		  spotifyAppBtn.addEventListener('click', () => {
+			window.location = data.spotifyAppUri;
+		  });
+
+		} catch (e) {
+		  console.error(e);
+		  // fallback: lascia i valori statici o mostra un messaggio
+		}
+	  })();
+	</script>
+
 
 </body>
 </html>
