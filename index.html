@@ -459,13 +459,10 @@
     const btn = document.getElementById('spotifyAppBtn');
     if (!btn) return;
 
-    const uri = data.spotifyAppUri;
-    if (!uri) {
-      console.warn('spotifyAppUri mancante in data.json');
-      return;
-    }
+    const uri = data.spotifyAppUri; // spotify:track:...
+    if (!uri) return;
 
-    // 1) Traccia PRIMA (quando il dito/mouse scende)
+    // 1) Track il prima possibile (pressione dito/mouse)
     btn.addEventListener('pointerdown', () => {
       if (typeof window.gtag === 'function') {
         window.gtag('event', 'spotify_app_open', {
@@ -473,18 +470,18 @@
           link_url: uri,
           transport_type: 'beacon'
         });
-        // opzionale debug
-        // console.log('[GA] spotify_app_open beacon queued');
       }
     }, { passive: true });
 
-    // 2) Apri l’app al click (subito, senza delay, senza window.open)
+    // 2) Apri app subito sul click
     btn.addEventListener('click', (e) => {
       e.preventDefault();
+      // niente delay, niente window.open
       window.location.href = uri;
     }, true);
   });
 </script>
+
 
 <script>
   function trackOutboundAndOpen(url, platform, newTab = true) {
