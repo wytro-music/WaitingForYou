@@ -374,46 +374,49 @@
 	</script>
 
 <script>
+  // Disabilita i bottoni finché non carico i link veri (evita click su "#")
+  document.addEventListener('DOMContentLoaded', () => {
+    document.documentElement.classList.add('links-loading');
+  });
+
   async function loadData() {
-    const res = await fetch('data.json', { cache: 'no-store' });
+    const res = await fetch('./data.json', { cache: 'no-store' }); // path robusto su GitHub Pages
+    if (!res.ok) throw new Error('data.json non trovato');
     return res.json();
   }
 
-  function sendEvent(name, params) {
+  function gaEvent(name, params) {
     if (typeof window.gtag === 'function') window.gtag('event', name, params);
-  }
-
-  function trackOutboundAndOpen(url, platform) {
-    // evento (non blocchiamo se GA non c'è)
-    sendEvent('outbound_click', {
-      platform,
-      link_url: url,
-      transport_type: 'beacon'
-    });
-
-    // apri subito (nuova tab)
-    window.open(url, '_blank', 'noopener');
   }
 
   function bindOutbound(el, platform) {
     el.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      trackOutboundAndOpen(el.href, platform);
+
+      // Tracking
+      gaEvent('outbound_click', {
+        platform,
+        link_url: el.href,
+        transport_type: 'beacon'
+      });
+
+      // Apri link
+      window.open(el.href, '_blank', 'noopener');
     }, true);
   }
 
   function bindSpotifyApp(btn, uri) {
-    // track best-effort prima possibile
+    // Tracking best-effort prima possibile
     btn.addEventListener('pointerdown', () => {
-      sendEvent('spotify_app_open', {
+      gaEvent('spotify_app_open', {
         platform: 'spotify_app',
         link_url: uri,
         transport_type: 'beacon'
       });
     }, { passive: true });
 
-    // apri subito l'app
+    // Apri app subito (NO delay)
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -424,40 +427,49 @@
   document.addEventListener('DOMContentLoaded', async () => {
     const data = await loadData();
 
-    // opzionale: data release
+    // Set testi
     const rd = document.getElementById('releaseDate');
     if (rd) rd.textContent = data.releaseDate;
 
-    // elementi
+    // Elementi
     const spotifyWeb = document.getElementById('spotifyWebLink');
     const deezer = document.getElementById('deezerLink');
-    const apple  = document.getElementById('appleMusic');
-    const amazon = document.getElementById('amazonMusic');
+    const apple = document.getElementById('appleMusicLink');
+    const amazon = document.getElementById('amazonMusicLink');
     const youtube = document.getElementById('youtubeLink');
-    const instagram = document.getElementById('instagramLink') || document.querySelector('.footer a');
-
     const spotifyAppBtn = document.getElementById('spotifyAppBtn');
 
-    // href da json
+    // Set href veri (NO "#")
     spotifyWeb.href = data.spotifyWeb;
     deezer.href = data.deezer;
     apple.href = data.appleMusic;
     amazon.href = data.amazonMusic;
     youtube.href = data.youtube;
-    if (instagram) instagram.href = data.instagram;
 
-    // bind tracking
+    // Bind tracking + apertura
     bindOutbound(spotifyWeb, 'spotify_web');
     bindOutbound(deezer, 'deezer');
     bindOutbound(apple, 'apple_music');
     bindOutbound(amazon, 'amazon_music');
     bindOutbound(youtube, 'youtube');
-    if (instagram) bindOutbound(instagram, 'instagram');
 
-    // spotify deep link da json
+    // Spotify app dal JSON
     bindSpotifyApp(spotifyAppBtn, data.spotifyAppUri);
+
+    // Riabilita bottoni (ora hanno link veri)
+    document.documentElement.classList.remove('links-loading');
   });
 </script>
+
+<style>
+  /* mentre carico data.json disabilito click sui bottoni */
+  .links-loading .buttons a,
+  .links-loading .buttons button,
+  .links-loading .footer a {
+    pointer-events: none;
+    opacity: 0.6;
+  }
+</style>
 
 
 </body>
