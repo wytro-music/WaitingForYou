@@ -374,62 +374,46 @@
 	</script>
 
 <script>
-  // ====== STATIC: links + GA events (reads from data.json) ======
-  // Requires in HTML:
-  // #releaseDate (optional)
-  // #spotifyAppBtn (button)
-  // #spotifyWebLink, #deezerLink, #appleMusicLink, #amazonMusicLink, #youtubeLink (anchors)
-  // #instagramLink (anchor) OR first ".footer a"
-
   async function loadData() {
     const res = await fetch('data.json', { cache: 'no-store' });
     return res.json();
   }
 
-  // Web links: track then open (reliable)
-  function trackOutboundAndOpen(url, platform, newTab = true) {
-    const open = () => {
-      if (newTab) window.open(url, '_blank', 'noopener');
-      else window.location.href = url;
-    };
+  function sendEvent(name, params) {
+    if (typeof window.gtag === 'function') window.gtag('event', name, params);
+  }
 
-    let done = false;
-    const go = () => {
-      if (done) return;
-      done = true;
-      open();
-    };
-
-    gtag('event', 'outbound_click', {
+  function trackOutboundAndOpen(url, platform) {
+    // evento (non blocchiamo se GA non c'è)
+    sendEvent('outbound_click', {
       platform,
       link_url: url,
-      transport_type: 'beacon',
-      event_callback: go
+      transport_type: 'beacon'
     });
 
-    setTimeout(go, 250);
+    // apri subito (nuova tab)
+    window.open(url, '_blank', 'noopener');
   }
 
   function bindOutbound(el, platform) {
     el.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
-      trackOutboundAndOpen(el.href, platform, true);
+      trackOutboundAndOpen(el.href, platform);
     }, true);
   }
 
-  // Spotify deep link: open immediately; track best-effort
   function bindSpotifyApp(btn, uri) {
-    // track as early as possible
+    // track best-effort prima possibile
     btn.addEventListener('pointerdown', () => {
-      gtag('event', 'spotify_app_open', {
+      sendEvent('spotify_app_open', {
         platform: 'spotify_app',
         link_url: uri,
         transport_type: 'beacon'
       });
     }, { passive: true });
 
-    // open app immediately (no delay, no window.open)
+    // apri subito l'app
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -440,36 +424,37 @@
   document.addEventListener('DOMContentLoaded', async () => {
     const data = await loadData();
 
-    // Content
-    const releaseDateEl = document.getElementById('releaseDate');
-    if (releaseDateEl) releaseDateEl.textContent = data.releaseDate;
+    // opzionale: data release
+    const rd = document.getElementById('releaseDate');
+    if (rd) rd.textContent = data.releaseDate;
 
-    // Elements
+    // elementi
     const spotifyWeb = document.getElementById('spotifyWebLink');
     const deezer = document.getElementById('deezerLink');
-    const apple = document.getElementById('appleMusicLink');
-    const amazon = document.getElementById('amazonMusicLink');
+    const apple  = document.getElementById('appleMusic');
+    const amazon = document.getElementById('amazonMusic');
     const youtube = document.getElementById('youtubeLink');
     const instagram = document.getElementById('instagramLink') || document.querySelector('.footer a');
+
     const spotifyAppBtn = document.getElementById('spotifyAppBtn');
 
-    // Set href from data.json
+    // href da json
     spotifyWeb.href = data.spotifyWeb;
     deezer.href = data.deezer;
     apple.href = data.appleMusic;
     amazon.href = data.amazonMusic;
     youtube.href = data.youtube;
-    instagram.href = data.instagram;
+    if (instagram) instagram.href = data.instagram;
 
-    // Bind tracking
+    // bind tracking
     bindOutbound(spotifyWeb, 'spotify_web');
     bindOutbound(deezer, 'deezer');
     bindOutbound(apple, 'apple_music');
     bindOutbound(amazon, 'amazon_music');
     bindOutbound(youtube, 'youtube');
-    bindOutbound(instagram, 'instagram');
+    if (instagram) bindOutbound(instagram, 'instagram');
 
-    // Spotify app deep link from data.json
+    // spotify deep link da json
     bindSpotifyApp(spotifyAppBtn, data.spotifyAppUri);
   });
 </script>

@@ -1,9 +1,13 @@
 {
   "releaseDate": "March 6, 2026",
+
   "spotifyAppUri": "spotify:track:5XV9cxGl6EkmnspSBmDnf8",
   "spotifyWeb": "https://open.spotify.com/track/5XV9cxGl6EkmnspSBmDnf8",
+
   "deezer": "https://www.deezer.com/it/album/831049421",
   "appleMusic": "https://music.apple.com/us/album/welcome-to-the-system-cup-single/1844003614",
   "amazonMusic": "https://music.amazon.in/albums/B0FTKX8TNQ",
-  "youtube": "https://youtu.be/h0RzYJAYiaM?si=3HEotJD8gglZR4xH"
+  "youtube": "https://youtu.be/h0RzYJAYiaM",
+  
+  "instagram": "https://www.instagram.com/wytro.music/"
 }
